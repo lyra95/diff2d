@@ -61,8 +61,21 @@ pub fn main() -> Result<()> {
     let (merged_row_len, merged_column_len) =
         (map.row_map_to_before.len(), map.column_map_to_before.len());
 
-    let (i0, j0) = (0, 0);
-    let (i1, j1) = (0, 1 + merged_column_len as u16);
+    let (i0, j0) = (1, 0);
+    let (i1, j1) = (i0, j0 + 1 + merged_column_len as u16);
+
+    {
+        let format = Format::new()
+            .set_background_color(Color::White)
+            .set_border(FormatBorder::None);
+
+        sheet.write_string_with_format(i0 - 1, j0, &args[1], &format)?;
+
+        sheet.write_string_with_format(i1 - 1, j1, &args[2], &format)?;
+    }
+
+    let mut is_same = true;
+
     for i in 0..merged_row_len {
         for j in 0..merged_column_len {
             match (
@@ -90,6 +103,7 @@ pub fn main() -> Result<()> {
                     } else if before[[ib, jb]].datum_type == Text
                         && after[[ia, ja]].datum_type == Text
                     {
+                        is_same = false;
                         let before_text = std::str::from_utf8(&before[[ib, jb]].datum).unwrap();
                         let after_text = std::str::from_utf8(&after[[ia, ja]].datum).unwrap();
 
@@ -153,6 +167,7 @@ pub fn main() -> Result<()> {
                             )?;
                         }
                     } else {
+                        is_same = false;
                         write_to_sheet(
                             sheet,
                             i0 + i as u32,
@@ -170,6 +185,7 @@ pub fn main() -> Result<()> {
                     }
                 }
                 (Some(ib), Some(jb), _, _) => {
+                    is_same = false;
                     write_to_sheet(
                         sheet,
                         i0 + i as u32,
@@ -180,6 +196,7 @@ pub fn main() -> Result<()> {
                     write_gray_blank(sheet, i1 + i as u32, j1 + j as u16);
                 }
                 (_, _, Some(ia), Some(ja)) => {
+                    is_same = false;
                     write_gray_blank(sheet, i0 + i as u32, j0 + j as u16);
                     write_to_sheet(
                         sheet,
@@ -196,6 +213,7 @@ pub fn main() -> Result<()> {
                     unreachable!();
                 }
                 _ => {
+                    is_same = false;
                     // ex) row 삭제 column 추가면 여기로 타는게 가능
                     //  + 가 추가, -가 삭제라 했을 때 아래와 같은 그림
                     // 이 unified 그림에서 (1,1)은 before에도 after에도 없다.
@@ -207,6 +225,14 @@ pub fn main() -> Result<()> {
                 }
             }
         }
+    }
+
+    if is_same {
+        let format = Format::new()
+            .set_background_color(Color::White)
+            .set_border(FormatBorder::None);
+
+        sheet.write_string_with_format(i0 - 1, j1 - 1, "Left and Right are the same", &format)?;
     }
 
     let dir = std::env::temp_dir();
