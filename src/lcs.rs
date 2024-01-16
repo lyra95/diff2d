@@ -31,7 +31,9 @@ fn split(text: &str) -> Vec<String> {
             current.push(c);
         }
     }
-    result.push(current);
+    if current.len() > 0 {
+        result.push(current);
+    }
     result
 }
 
