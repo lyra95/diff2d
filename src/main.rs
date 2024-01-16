@@ -97,32 +97,61 @@ pub fn main() -> Result<()> {
                         let red = Format::new().set_font_color(Color::Red);
                         let green = Format::new().set_font_color(Color::Green);
                         let bg = Format::new().set_background_color(Color::Yellow);
-                        let (rich_input_1, rich_input_2) =
-                            diff(before_text, after_text, &green, &red, &black);
-                        sheet
-                            .write_rich_string_with_format(
-                                i0 + i as u32,
-                                j0 + j as u16,
-                                rich_input_1
-                                    .iter()
-                                    .map(|(f, s)| (*f, &**s))
-                                    .collect::<Vec<(&Format, &str)>>()
-                                    .as_slice(),
-                                &bg,
-                            )
-                            .expect("too many chars");
-                        sheet
-                            .write_rich_string_with_format(
+
+                        if before_text.is_empty() && after_text.is_empty() {
+                            // 여기 왜 왔지??
+                            continue;
+                        } else if before_text.is_empty() {
+                            sheet.write_rich_string_with_format(
                                 i1 + i as u32,
                                 j1 + j as u16,
-                                rich_input_2
-                                    .iter()
-                                    .map(|(f, s)| (*f, &**s))
-                                    .collect::<Vec<(&Format, &str)>>()
-                                    .as_slice(),
+                                vec![(&green, after_text)].as_slice(),
                                 &bg,
-                            )
-                            .expect("too many chars 2");
+                            )?;
+                        } else if after_text.is_empty() {
+                            sheet.write_rich_string_with_format(
+                                i0 + i as u32,
+                                j0 + j as u16,
+                                vec![(&red, before_text)].as_slice(),
+                                &bg,
+                            )?;
+                        } else if before_text == after_text {
+                            // 여기 왜 왔지2 ??
+                            continue;
+                        }
+
+                        let (rich_input_1, rich_input_2) =
+                            diff(before_text, after_text, &green, &red, &black);
+
+                        let rich_input_1 = rich_input_1
+                            .iter()
+                            .map(|(f, s)| (*f, &**s))
+                            .filter(|(_, s)| !s.is_empty())
+                            .collect::<Vec<(&Format, &str)>>();
+
+                        let rich_input_2 = rich_input_2
+                            .iter()
+                            .map(|(f, s)| (*f, &**s))
+                            .filter(|(_, s)| !s.is_empty())
+                            .collect::<Vec<(&Format, &str)>>();
+
+                        if !rich_input_1.is_empty() {
+                            sheet.write_rich_string_with_format(
+                                i0 + i as u32,
+                                j0 + j as u16,
+                                rich_input_1.as_slice(),
+                                &bg,
+                            )?;
+                        }
+
+                        if !rich_input_2.is_empty() {
+                            sheet.write_rich_string_with_format(
+                                i1 + i as u32,
+                                j1 + j as u16,
+                                rich_input_2.as_slice(),
+                                &bg,
+                            )?;
+                        }
                     } else {
                         write_to_sheet(
                             sheet,
