@@ -320,7 +320,7 @@ fn write_to_sheet(
             datum_type: Type::Blob,
         } => {
             sheet
-                .write_string_with_format(row, column, std::str::from_utf8(datum).unwrap(), &format)
+                .write_string_with_format(row, column, "This is a Blob", &format)
                 .unwrap();
         }
         DatumWithType {
@@ -328,7 +328,7 @@ fn write_to_sheet(
             datum_type: Type::Null,
         } => {
             sheet
-                .write_string_with_format(row, column, std::str::from_utf8(datum).unwrap(), &format)
+                .write_string_with_format(row, column, "This is a DBNull", &format)
                 .unwrap();
         }
     }
