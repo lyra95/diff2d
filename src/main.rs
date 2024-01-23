@@ -228,11 +228,7 @@ pub fn main() -> Result<()> {
     }
 
     if is_same {
-        let format = Format::new()
-            .set_background_color(Color::White)
-            .set_border(FormatBorder::None);
-
-        sheet.write_string_with_format(i0 - 1, j1 - 1, "Left and Right are the same", &format)?;
+        println!("same");
     }
 
     let dir = std::env::temp_dir();

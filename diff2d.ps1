@@ -55,7 +55,18 @@ if ($job.State -eq "Failed") {
 }
 
 # put job's output into a variable
-$filePath = Receive-Job -Job $job
+$jobOutput = Receive-Job -Job $job
+
+# when diff are same, jobOutput is actually 2 lines and first line is "same"
+$is_same = $jobOutput -split "'n" | Select-Object -First 1
+$filePath = $jobOutput -split "'n" | Select-Object -Last 1
+
+if ($is_same -eq "same") {
+  $result = [System.Windows.Forms.MessageBox]::Show("두 파일은 동일합니다. 그래도 비교 엑셀 파일을 열까요?", "Info", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information)
+  if ($result -ne "Yes") {
+    Exit 0
+  }
+}
 
 # Create a new Excel application object
 $excel = New-Object -ComObject Excel.Application
